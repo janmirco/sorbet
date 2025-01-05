@@ -1,0 +1,14 @@
+[project]
+name = "sorbet"
+version = "0.1.0"
+description = "A small, readable, and extensible finite element tool for quickly testing ideas or for teaching purposes."
+readme = "README.md"
+authors = [
+    { name = "Jan Mirco Pfeifer", email = "126580858+janmirco@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "gmsh>=4.13.1",
+    "numpy>=2.2.1",
+    "pyvista>=0.44.2",
+]
