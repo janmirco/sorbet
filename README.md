@@ -6,6 +6,13 @@
 Sorbet is a small, readable, and extensible [finite element](https://en.wikipedia.org/wiki/Finite_element_method) tool for quickly testing ideas or for teaching purposes.
 The key point here is **readability** and **extensibility** over performance!
 
+## Use cases
+
+- Continuum solid mechanics
+- Small and large deformations
+- Elasticity and elasto-plasticity
+- Spatial statistics
+
 ## Software used
 
 - Language: [Python](https://www.python.org/)
