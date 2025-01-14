@@ -1,0 +1,134 @@
+"""Wrapper for easy handling of Gmsh's Python API"""
+
+import contextlib
+import logging
+from pathlib import Path
+
+import gmsh
+import meshio
+
+from sorbet.logging import log_end, log_start
+from sorbet.paths import setup_paths
+
+
+class GmshManager:
+    """Context manager for Gmsh initialization, meshing, finalization, and more"""
+
+    def __init__(self, model_name: str = "Sorbet mesh", debug_mode: bool = False):
+        self.model_name = model_name
+        self.debug_mode = debug_mode
+
+    def __enter__(self):
+        gmsh.initialize()
+        gmsh.model.add(self.model_name)
+        gmsh.option.set_number("General.Terminal", self.debug_mode)
+        gmsh.option.set_number("General.Tooltips", self.debug_mode)
+        return self
+
+    def __exit__(self, *_):
+        gmsh.finalize()
+
+    def create_mesh(
+        self,
+        dimension: int = 3,
+        mesh_size: float | bool = False,
+        recombine_all: bool = True,
+        quasi_structured: bool = False,
+        element_order: int = 1,
+        smoothing: int = 100,
+        transfinite_automatic: bool = False,
+        mesh_file_name: str = "mesh.msh",
+    ) -> None:
+        """Mesh created geometry with sane defaults"""
+
+        output_dir = setup_paths()
+        self.mesh_file = output_dir / Path(mesh_file_name)
+        if self.mesh_file.exists():
+            logging.info(f"Mesh file with chosen name already exists and is not overwritten: {self.mesh_file}")
+        else:
+            if mesh_size:
+                gmsh.option.set_number("Mesh.MeshSizeFromPoints", False)
+                gmsh.option.set_number("Mesh.MeshSizeMin", mesh_size)
+                gmsh.option.set_number("Mesh.MeshSizeMax", mesh_size)
+            gmsh.option.set_number("Mesh.RecombineAll", recombine_all)
+            if quasi_structured:
+                gmsh.option.set_number("Mesh.Algorithm", 11)  # quasi-structured
+            gmsh.option.set_number("Mesh.ElementOrder", element_order)
+            gmsh.option.set_number("Mesh.Smoothing", smoothing)
+            if transfinite_automatic:
+                gmsh.model.mesh.set_transfinite_automatic()
+            gmsh.model.mesh.generate(dim=dimension)
+
+            # save mesh
+            gmsh.write(self.mesh_file.as_posix())
+
+        # get mesh information
+        with contextlib.redirect_stdout(None):
+            self.mesh = meshio.read(self.mesh_file)
+
+    def show_geometry(
+        self,
+        points: bool = True,
+        lines: bool = True,
+        surfaces: bool = True,
+        point_numbers: bool = False,
+        line_numbers: bool = False,
+        surface_numbers: bool = False,
+    ) -> None:
+        """Open GUI to show created geometry"""
+
+        gmsh.option.set_number("Geometry.Points", points)
+        gmsh.option.set_number("Geometry.Lines", lines)
+        gmsh.option.set_number("Geometry.Surfaces", surfaces)
+        gmsh.option.set_number("Geometry.PointNumbers", point_numbers)
+        gmsh.option.set_number("Geometry.LineNumbers", line_numbers)
+        gmsh.option.set_number("Geometry.SurfaceNumbers", surface_numbers)
+        gmsh.fltk.run()
+
+    def show_mesh(
+        self,
+        node_numbers: bool = False,
+        element_numbers: bool = False,
+        element_surfaces: bool = True,
+    ) -> None:
+        """Open GUI to show created mesh"""
+
+        gmsh.open(self.mesh_file.as_posix())
+        gmsh.option.set_number("Geometry.Points", False)
+        gmsh.option.set_number("Geometry.Lines", False)
+        gmsh.option.set_number("Geometry.Surfaces", False)
+        gmsh.option.set_number("Mesh.SurfaceFaces", element_surfaces)
+        gmsh.option.set_number("Mesh.PointNumbers", node_numbers)
+        gmsh.option.set_number("Mesh.SurfaceNumbers", element_numbers)
+        gmsh.fltk.run()
+
+
+def create_notched_specimen(
+    geometry_width: float = 8.0,
+    geometry_height: float = 3.0,
+    geometry_thickness: float = 0.5,
+    mesh_size_plane: float = 0.2,
+    num_elements_thickness: int = 3,
+    show_mesh: bool = False,
+) -> meshio.Mesh:
+    section = "create_notched_specimen"
+    log_start(section)
+    mesh = meshio.Mesh
+    with GmshManager() as gm:
+        # create geometry
+        x, y, z = 0.0, 0.0, 0.0  # position of bottom left point of rectangle
+        radius = 0.5
+        rec = gmsh.model.occ.add_rectangle(x, y, z, geometry_width, geometry_height)
+        cyl1 = gmsh.model.occ.add_cylinder(x + geometry_width / 2.0, y, z - 0.5, 0.0, 0.0, 1.0, radius)
+        cyl2 = gmsh.model.occ.add_cylinder(x + geometry_width / 2.0, y + geometry_height, z - 0.5, 0.0, 0.0, 1.0, radius)
+        plane = gmsh.model.occ.cut([(2, rec)], [(3, cyl1), (3, cyl2)])[0][0][1]
+        gmsh.model.occ.extrude([(2, plane)], dx=0.0, dy=0.0, dz=geometry_thickness, numElements=[num_elements_thickness], recombine=True)
+        gmsh.model.occ.synchronize()  # needs to be called before any use of functions outside of the OCC kernel
+
+        # create mesh
+        gm.create_mesh(dimension=3, mesh_size=mesh_size_plane, quasi_structured=True)
+        if show_mesh:
+            gm.show_mesh()
+        mesh = gm.mesh
+    log_end(section)
+    return mesh
