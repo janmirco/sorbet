@@ -19,6 +19,6 @@ The key point here is **readability** and **extensibility** over performance!
 - Code execution: [GNU Make](https://www.gnu.org/software/make/)
 - Package and project manager: [uv](https://docs.astral.sh/uv/)
 - Python packages:
-  - [Gmsh](https://gmsh.info/)
-  - [NumPy](https://numpy.org/)
-  - [PyVista](https://docs.pyvista.org/)
+    - [Gmsh](https://gmsh.info/)
+    - [NumPy](https://numpy.org/)
+    - [PyVista](https://docs.pyvista.org/)
