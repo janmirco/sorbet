@@ -1,4 +1,9 @@
-.PHONY: run
+.PHONY: run clean
 
 run:
 	@python3 main.py
+
+clean:
+	@rm -rf */__pycache__/
+	@rm -rf __pycache__/
+	@rm -rf output/
