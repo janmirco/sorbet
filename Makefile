@@ -1,7 +1,7 @@
 .PHONY: run clean
 
 run:
-	@python3 main.py
+	@uv run setup.py
 
 clean:
 	@rm -rf */__pycache__/
