@@ -4,7 +4,7 @@ from sorbet.mesh import create_notched_specimen
 
 
 def main() -> None:
-    mesh = create_notched_specimen(show_mesh=True)
+    mesh = create_notched_specimen(show_geometry=True, show_mesh=True)
     nodes = mesh.points
     elements = mesh.cells_dict["hexahedron"]
 

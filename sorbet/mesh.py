@@ -109,6 +109,7 @@ def create_notched_specimen(
     geometry_thickness: float = 0.5,
     mesh_size_plane: float = 0.2,
     num_elements_thickness: int = 3,
+    show_geometry: bool = False,
     show_mesh: bool = False,
 ) -> meshio.Mesh:
     section = "create_notched_specimen"
@@ -125,10 +126,14 @@ def create_notched_specimen(
         gmsh.model.occ.extrude([(2, plane)], dx=0.0, dy=0.0, dz=geometry_thickness, numElements=[num_elements_thickness], recombine=True)
         gmsh.model.occ.synchronize()  # needs to be called before any use of functions outside of the OCC kernel
 
+        if show_geometry:
+            gm.show_geometry()
+
         # create mesh
         gm.create_mesh(dimension=3, mesh_size=mesh_size_plane, quasi_structured=True)
+        mesh = gm.mesh
+
         if show_mesh:
             gm.show_mesh()
-        mesh = gm.mesh
     log_end(section)
     return mesh
