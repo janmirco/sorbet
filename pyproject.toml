@@ -6,6 +6,7 @@ readme = "README.md"
 authors = [
     { name = "Jan Mirco Pfeifer", email = "126580858+janmirco@users.noreply.github.com" }
 ]
+license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
     "gmsh>=4.13.1",
@@ -13,3 +14,7 @@ dependencies = [
     "numpy>=2.2.1",
     "pyvista>=0.44.2",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
