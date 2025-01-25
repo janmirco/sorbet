@@ -7,8 +7,7 @@ from pathlib import Path
 import gmsh
 import meshio
 
-from sorbet.logging import log_end, log_start
-from sorbet.paths import setup_paths
+import sorbet
 
 
 class GmshManager:
@@ -41,7 +40,7 @@ class GmshManager:
     ) -> None:
         """Mesh created geometry with sane defaults"""
 
-        output_dir = setup_paths()
+        output_dir = sorbet.paths.setup()
         self.mesh_file = output_dir / Path(mesh_file_name)
         if self.mesh_file.exists():
             logging.info(f"Mesh file with chosen name already exists and is not overwritten: {self.mesh_file}")
@@ -113,7 +112,7 @@ def create_cube(
     show_mesh: bool = False,
 ) -> meshio.Mesh:
     section = "create_cube"
-    log_start(section)
+    sorbet.logging.start(section)
     mesh = meshio.Mesh
     with GmshManager() as gm:
         # create geometry
@@ -131,7 +130,7 @@ def create_cube(
 
         if show_mesh:
             gm.show_mesh()
-    log_end(section)
+    sorbet.logging.end(section)
     return mesh
 
 
@@ -145,7 +144,7 @@ def create_notched_specimen(
     show_mesh: bool = False,
 ) -> meshio.Mesh:
     section = "create_notched_specimen"
-    log_start(section)
+    sorbet.logging.start(section)
     mesh = meshio.Mesh
     with GmshManager() as gm:
         # create geometry
@@ -167,5 +166,5 @@ def create_notched_specimen(
 
         if show_mesh:
             gm.show_mesh()
-    log_end(section)
+    sorbet.logging.end(section)
     return mesh

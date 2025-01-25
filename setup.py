@@ -1,12 +1,11 @@
 import logging
 from pathlib import Path
 
+import sorbet
 from main import main
-from sorbet.logging import log_end, log_start
-from sorbet.paths import setup_paths
 
 if __name__ == "__main__":
-    output_dir = setup_paths()
+    output_dir = sorbet.paths.setup()
     logging.basicConfig(
         level=logging.INFO,
         format="[%(levelname)s] %(asctime)s - %(message)s",
@@ -24,6 +23,6 @@ if __name__ == "__main__":
     """
     logging.info(sorbet_logo)
     section = "main"
-    log_start(section)
+    sorbet.logging.start(section)
     main()
-    log_end(section)
+    sorbet.logging.end(section)
