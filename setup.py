@@ -23,6 +23,6 @@ if __name__ == "__main__":
     """
     logging.info(sorbet_logo)
     section = "main"
-    sorbet.logging.start(section)
+    sorbet.log.start(section)
     main()
-    sorbet.logging.end(section)
+    sorbet.log.end(section)

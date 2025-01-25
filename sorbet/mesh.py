@@ -117,7 +117,7 @@ def create_cube(
     show_mesh: bool = False,
 ) -> tuple[NDArray[np.float64], NDArray[np.uint64]]:
     section = "create_cube"
-    sorbet.logging.start(section)
+    sorbet.log.start(section)
     with GmshManager() as gm:
         # create geometry
         x, y, z = 0.0, 0.0, 0.0  # position of bottom left point of rectangle
@@ -131,7 +131,7 @@ def create_cube(
         gm.create_mesh(dimension=3, mesh_size=mesh_size_plane, transfinite_automatic=True)
         if show_mesh:
             gm.show_mesh()
-    sorbet.logging.end(section)
+    sorbet.log.end(section)
     return gm.nodes, gm.elements
 
 
@@ -145,7 +145,7 @@ def create_notched_specimen(
     show_mesh: bool = False,
 ) -> tuple[NDArray[np.float64], NDArray[np.uint64]]:
     section = "create_notched_specimen"
-    sorbet.logging.start(section)
+    sorbet.log.start(section)
     with GmshManager() as gm:
         # create geometry
         x, y, z = 0.0, 0.0, 0.0  # position of bottom left point of rectangle
@@ -163,5 +163,5 @@ def create_notched_specimen(
         gm.create_mesh(dimension=3, mesh_size=mesh_size_plane, quasi_structured=True)
         if show_mesh:
             gm.show_mesh()
-    sorbet.logging.end(section)
+    sorbet.log.end(section)
     return gm.nodes, gm.elements
