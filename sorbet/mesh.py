@@ -1,11 +1,11 @@
 """Wrapper for easy handling of Gmsh's Python API"""
 
-import contextlib
 import logging
 from pathlib import Path
 
 import gmsh
-import meshio
+import numpy as np
+from numpy.typing import NDArray
 
 import sorbet
 
@@ -44,6 +44,8 @@ class GmshManager:
         self.mesh_file = output_dir / Path(mesh_file_name)
         if self.mesh_file.exists():
             logging.info(f"Mesh file with chosen name already exists and is not overwritten: {self.mesh_file}")
+            gmsh.open(self.mesh_file.as_posix())
+
         else:
             if mesh_size:
                 gmsh.option.set_number("Mesh.MeshSizeFromPoints", False)
@@ -61,9 +63,12 @@ class GmshManager:
             # save mesh
             gmsh.write(self.mesh_file.as_posix())
 
-        # get mesh information
-        with contextlib.redirect_stdout(None):
-            self.mesh = meshio.read(self.mesh_file)
+        # store mesh information
+        self.nodes = gmsh.model.mesh.get_nodes(dim=dimension, tag=-1, includeBoundary=True, returnParametricCoord=False)[1].reshape(-1, 3)
+        element_types, _, element_node_tags_list = gmsh.model.mesh.get_elements(dim=dimension, tag=-1)
+        if (element_types.shape[0] > 1) or (element_types[0] != 5):
+            raise NotImplementedError(f"Currently only supporting hexahedral elements. Mesh needs to be changed. element_types = {element_types}")
+        self.elements = element_node_tags_list[0].reshape(-1, 8)
 
     def show_geometry(
         self,
@@ -110,28 +115,24 @@ def create_cube(
     num_elements_thickness: int = 3,
     show_geometry: bool = False,
     show_mesh: bool = False,
-) -> meshio.Mesh:
+) -> tuple[NDArray[np.float64], NDArray[np.uint64]]:
     section = "create_cube"
     sorbet.logging.start(section)
-    mesh = meshio.Mesh
     with GmshManager() as gm:
         # create geometry
         x, y, z = 0.0, 0.0, 0.0  # position of bottom left point of rectangle
         rec = gmsh.model.occ.add_rectangle(x, y, z, geometry_width, geometry_height)
         gmsh.model.occ.extrude([(2, rec)], dx=0.0, dy=0.0, dz=geometry_thickness, numElements=[num_elements_thickness], recombine=True)
         gmsh.model.occ.synchronize()  # needs to be called before any use of functions outside of the OCC kernel
-
         if show_geometry:
             gm.show_geometry()
 
         # create mesh
         gm.create_mesh(dimension=3, mesh_size=mesh_size_plane, transfinite_automatic=True)
-        mesh = gm.mesh
-
         if show_mesh:
             gm.show_mesh()
     sorbet.logging.end(section)
-    return mesh
+    return gm.nodes, gm.elements
 
 
 def create_notched_specimen(
@@ -142,10 +143,9 @@ def create_notched_specimen(
     num_elements_thickness: int = 3,
     show_geometry: bool = False,
     show_mesh: bool = False,
-) -> meshio.Mesh:
+) -> tuple[NDArray[np.float64], NDArray[np.uint64]]:
     section = "create_notched_specimen"
     sorbet.logging.start(section)
-    mesh = meshio.Mesh
     with GmshManager() as gm:
         # create geometry
         x, y, z = 0.0, 0.0, 0.0  # position of bottom left point of rectangle
@@ -156,15 +156,12 @@ def create_notched_specimen(
         plane = gmsh.model.occ.cut([(2, rec)], [(3, cyl1), (3, cyl2)])[0][0][1]
         gmsh.model.occ.extrude([(2, plane)], dx=0.0, dy=0.0, dz=geometry_thickness, numElements=[num_elements_thickness], recombine=True)
         gmsh.model.occ.synchronize()  # needs to be called before any use of functions outside of the OCC kernel
-
         if show_geometry:
             gm.show_geometry()
 
         # create mesh
         gm.create_mesh(dimension=3, mesh_size=mesh_size_plane, quasi_structured=True)
-        mesh = gm.mesh
-
         if show_mesh:
             gm.show_mesh()
     sorbet.logging.end(section)
-    return mesh
+    return gm.nodes, gm.elements

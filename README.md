@@ -20,6 +20,5 @@ The key point here is **readability** and **extensibility** over performance!
 - Package and project manager: [uv](https://docs.astral.sh/uv/)
 - Python packages:
     - [Gmsh](https://gmsh.info/)
-    - [meshio](https://github.com/nschloe/meshio)
     - [NumPy](https://numpy.org/)
     - [PyVista](https://docs.pyvista.org/)
