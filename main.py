@@ -1,10 +1,10 @@
 """Sorbet"""
 
-from sorbet.mesh import create_notched_specimen
+import sorbet.mesh as m
 
 
 def main() -> None:
-    mesh = create_notched_specimen(show_geometry=True, show_mesh=True)
+    mesh = m.create_cube(num_elements_thickness=7, show_geometry=True, show_mesh=True)
     nodes = mesh.points
     elements = mesh.cells_dict["hexahedron"]
 

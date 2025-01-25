@@ -103,6 +103,38 @@ class GmshManager:
         gmsh.fltk.run()
 
 
+def create_cube(
+    geometry_width: float = 1.0,
+    geometry_height: float = 1.0,
+    geometry_thickness: float = 1.0,
+    mesh_size_plane: float = 0.2,
+    num_elements_thickness: int = 3,
+    show_geometry: bool = False,
+    show_mesh: bool = False,
+) -> meshio.Mesh:
+    section = "create_cube"
+    log_start(section)
+    mesh = meshio.Mesh
+    with GmshManager() as gm:
+        # create geometry
+        x, y, z = 0.0, 0.0, 0.0  # position of bottom left point of rectangle
+        rec = gmsh.model.occ.add_rectangle(x, y, z, geometry_width, geometry_height)
+        gmsh.model.occ.extrude([(2, rec)], dx=0.0, dy=0.0, dz=geometry_thickness, numElements=[num_elements_thickness], recombine=True)
+        gmsh.model.occ.synchronize()  # needs to be called before any use of functions outside of the OCC kernel
+
+        if show_geometry:
+            gm.show_geometry()
+
+        # create mesh
+        gm.create_mesh(dimension=3, mesh_size=mesh_size_plane, transfinite_automatic=True)
+        mesh = gm.mesh
+
+        if show_mesh:
+            gm.show_mesh()
+    log_end(section)
+    return mesh
+
+
 def create_notched_specimen(
     geometry_width: float = 8.0,
     geometry_height: float = 3.0,
