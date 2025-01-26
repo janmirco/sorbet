@@ -3,18 +3,16 @@ from numpy.typing import NDArray
 
 
 def linear_shape_functions(xi: float, eta: float, zeta: float) -> NDArray[np.float64]:
-    return np.array(
-        [
-            0.125 * (1.0 - xi) * (1.0 - eta) * (1.0 - zeta),
-            0.125 * (1.0 + xi) * (1.0 - eta) * (1.0 - zeta),
-            0.125 * (1.0 + xi) * (1.0 + eta) * (1.0 - zeta),
-            0.125 * (1.0 - xi) * (1.0 + eta) * (1.0 - zeta),
-            0.125 * (1.0 - xi) * (1.0 - eta) * (1.0 + zeta),
-            0.125 * (1.0 + xi) * (1.0 - eta) * (1.0 + zeta),
-            0.125 * (1.0 + xi) * (1.0 + eta) * (1.0 + zeta),
-            0.125 * (1.0 - xi) * (1.0 + eta) * (1.0 + zeta),
-        ]
-    )
+    N = np.zeros(8)
+    N[0] = 0.125 * (1.0 - xi) * (1.0 - eta) * (1.0 - zeta)
+    N[1] = 0.125 * (1.0 + xi) * (1.0 - eta) * (1.0 - zeta)
+    N[2] = 0.125 * (1.0 + xi) * (1.0 + eta) * (1.0 - zeta)
+    N[3] = 0.125 * (1.0 - xi) * (1.0 + eta) * (1.0 - zeta)
+    N[4] = 0.125 * (1.0 - xi) * (1.0 - eta) * (1.0 + zeta)
+    N[5] = 0.125 * (1.0 + xi) * (1.0 - eta) * (1.0 + zeta)
+    N[6] = 0.125 * (1.0 + xi) * (1.0 + eta) * (1.0 + zeta)
+    N[7] = 0.125 * (1.0 - xi) * (1.0 + eta) * (1.0 + zeta)
+    return N
 
 
 def linear_shape_function_derivatives(xi: float, eta: float, zeta: float) -> NDArray[np.float64]:
