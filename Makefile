@@ -1,7 +1,7 @@
 .PHONY: run clean
 
 run:
-	@export JAX_PLATFORMS=cpu ; uv run setup.py
+	@uv run setup.py
 
 clean:
 	@rm -rf */__pycache__/
