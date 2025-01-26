@@ -20,5 +20,6 @@ The key point here is **readability** and **extensibility** over performance!
 - Package and project manager: [uv](https://docs.astral.sh/uv/)
 - Python packages:
     - [Gmsh](https://gmsh.info/)
+    - [JAX](https://jax.readthedocs.io/)
     - [NumPy](https://numpy.org/)
     - [PyVista](https://docs.pyvista.org/)
