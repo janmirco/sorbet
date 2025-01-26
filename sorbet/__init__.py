@@ -1,1 +1,1 @@
-from . import log, mesh, paths
+from . import fem, log, mesh, paths
