@@ -68,7 +68,7 @@ class GmshManager:
         element_types, _, element_node_tags_list = gmsh.model.mesh.get_elements(dim=dimension, tag=-1)
         if (element_types.shape[0] > 1) or (element_types[0] != 5):
             raise NotImplementedError(f"Currently only supporting hexahedral elements. Mesh needs to be changed. element_types = {element_types}")
-        self.elements = element_node_tags_list[0].reshape(-1, 8)
+        self.elements = element_node_tags_list[0].reshape(-1, 8) - 1
 
     def show_geometry(
         self,
