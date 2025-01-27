@@ -4,23 +4,29 @@ import sorbet
 
 
 def main() -> None:
-    nodes, elements = sorbet.mesh.create_cube(num_elements_thickness=7, show_geometry=False, show_mesh=False)
+    nodes, elements = sorbet.mesh.create_cube(num_elements_thickness=7)
     material_parameters = {"E": 2.1e5, "nu": 0.3}
     K = sorbet.fem.assemble_global_stiffness_matrix(nodes, elements, material_parameters)
 
     num_nodes = nodes.shape[0]
     f = np.zeros(3 * num_nodes)  # initialize force vector with zeros
 
-    # Find nodes on the bottom face (x=0) and top face (x=max)
-    left_nodes = np.where(np.isclose(nodes[:, 0], 0))[0]
-    right_nodes = np.where(np.isclose(nodes[:, 0], nodes[:, 0].max()))[0]
+    # Find nodes at all six faces
+    face_x_min = np.where(np.isclose(nodes[:, 0], 0))[0]
+    face_x_max = np.where(np.isclose(nodes[:, 0], nodes[:, 0].max()))[0]
+    face_y_min = np.where(np.isclose(nodes[:, 1], 0))[0]
+    face_z_min = np.where(np.isclose(nodes[:, 2], 0))[0]
 
     # Define displacement boundary conditions
     bcs = []
-    for node in left_nodes:
-        bcs.extend([(node, 0, 0.0), (node, 1, 0.0), (node, 2, 0.0)])  # fix left face
-    for node in right_nodes:
-        bcs.append((node, 0, 0.1))  # prescribe x-displacement of right face
+    for node in face_x_min:
+        bcs.extend([(node, 0, 0.0)])
+    for node in face_x_max:
+        bcs.append((node, 0, 0.5))
+    for node in face_y_min:
+        bcs.extend([(node, 1, 0.0)])
+    for node in face_z_min:
+        bcs.extend([(node, 2, 0.0)])
 
     # Apply boundary conditions
     for node, dof, value in bcs:
