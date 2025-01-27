@@ -55,8 +55,12 @@ def linear_shape_function_derivatives(xi: float, eta: float, zeta: float) -> NDA
 
 def gauss_quadrature(num_points: int = 8) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     match num_points:
+        case 1:
+            points = np.zeros((1, 3))
+            weights = 8.0 * np.ones(num_points)
+            return points, weights
         case 8:
-            x, y = np.polynomial.legendre.leggauss(2)
+            x, _ = np.polynomial.legendre.leggauss(2)
             points = np.array(
                 [
                     [x[0], x[0], x[0]],
@@ -72,7 +76,7 @@ def gauss_quadrature(num_points: int = 8) -> tuple[NDArray[np.float64], NDArray[
             weights = np.ones(num_points)
             return points, weights
         case _:
-            raise NotImplementedError(f"Currently only supporting eight Gauss points. num_points = {num_points}")
+            raise NotImplementedError(f"Currently only supporting one or eight Gauss points. num_points = {num_points}")
 
 
 def element_stiffness_matrix():
