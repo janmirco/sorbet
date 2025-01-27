@@ -71,9 +71,39 @@ def B_operator(dN, J):
 def gauss_quadrature(num_points: int = 8) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     match num_points:
         case 1:
-            points = np.zeros((1, 3))
+            points = np.array([[0.0, 0.0, 0.0]])
             weights = np.array([8.0])
             return points, weights
+
+        case 4:
+            a = np.sqrt(2.0 / 3.0)
+            b = 1.0 / np.sqrt(3.0)
+            points = np.array(
+                [
+                    [0.0, a, -b],
+                    [0.0, -a, -b],
+                    [a, 0.0, b],
+                    [-a, 0.0, b],
+                ]
+            )
+            weights = np.array([2.0, 2.0, 2.0, 2.0])
+            return points, weights
+
+        case 6:
+            points = np.array(
+                [
+                    [1.0, 0.0, 0.0],
+                    [-1.0, 0.0, 0.0],
+                    [0.0, 1.0, 0.0],
+                    [0.0, -1.0, 0.0],
+                    [0.0, 0.0, 1.0],
+                    [0.0, 0.0, -1.0],
+                ]
+            )
+            w = 4.0 / 3.0
+            weights = np.array([w, w, w, w, w, w])
+            return points, weights
+
         case 8:
             x, _ = np.polynomial.legendre.leggauss(2)
             points = np.array(
@@ -91,7 +121,7 @@ def gauss_quadrature(num_points: int = 8) -> tuple[NDArray[np.float64], NDArray[
             weights = np.ones(num_points)
             return points, weights
         case _:
-            raise NotImplementedError(f"Currently only supporting one or eight Gauss points. num_points = {num_points}")
+            raise NotImplementedError(f"Currently only supporting 1/4/6/8 Gauss points. num_points = {num_points}")
 
 
 def linear_elastic_material_tangent(E: float, nu: float) -> NDArray[np.float64]:
