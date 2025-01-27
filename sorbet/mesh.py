@@ -63,12 +63,23 @@ class GmshManager:
             # save mesh
             gmsh.write(self.mesh_file.as_posix())
 
-        # store mesh information
-        self.nodes = gmsh.model.mesh.get_nodes(dim=dimension, tag=-1, includeBoundary=True, returnParametricCoord=False)[1].reshape(-1, 3)
-        element_types, _, element_node_tags_list = gmsh.model.mesh.get_elements(dim=dimension, tag=-1)
-        if (element_types.shape[0] > 1) or (element_types[0] != 5):
+        # get nodes
+        node_tags, node_coords, _ = gmsh.model.mesh.get_nodes()
+        node_tags -= 1
+        node_coords = node_coords.reshape(-1, 3)
+        num_nodes = node_coords.shape[0]
+
+        # get elements
+        element_types, _, element_node_tags_list = gmsh.model.mesh.get_elements(dim=dimension)
+        if (element_types.shape[0] != 1) or (element_types[0] != 5):
             raise NotImplementedError(f"Currently only supporting hexahedral elements. Mesh needs to be changed. element_types = {element_types}")
-        self.elements = element_node_tags_list[0].reshape(-1, 8) - 1
+        element_node_tags = element_node_tags_list[0].reshape(-1, 8) - 1
+
+        # resort nodes, update element connectivity, and store mesh information
+        self.nodes = node_coords[node_tags]
+        index_map = np.zeros(num_nodes, dtype=np.int64)
+        index_map[node_tags] = np.arange(num_nodes)
+        self.elements = index_map[element_node_tags]
 
     def show_geometry(
         self,

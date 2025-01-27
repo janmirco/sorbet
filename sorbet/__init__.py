@@ -1,1 +1,1 @@
-from . import fem, log, mesh, paths
+from . import fem, log, mesh, paths, post_processing, sparsity

@@ -9,19 +9,18 @@ def main() -> None:
     K = sorbet.fem.assemble_global_stiffness_matrix(nodes, elements, material_parameters)
 
     num_nodes = nodes.shape[0]
-    f = np.zeros(3 * num_nodes)  # Initialize force vector with zeros
+    f = np.zeros(3 * num_nodes)  # initialize force vector with zeros
 
-    # Find nodes on the bottom face (z=0) and top face (z=max)
-    bottom_nodes = np.where(np.isclose(nodes[:, 2], 0))[0]
-    top_nodes = np.where(np.isclose(nodes[:, 2], nodes[:, 2].max()))[0]
+    # Find nodes on the bottom face (x=0) and top face (x=max)
+    left_nodes = np.where(np.isclose(nodes[:, 0], 0))[0]
+    right_nodes = np.where(np.isclose(nodes[:, 0], nodes[:, 0].max()))[0]
 
     # Define displacement boundary conditions
     bcs = []
-    for node in bottom_nodes:
-        bcs.extend([(node, 0, 0.0), (node, 1, 0.0), (node, 2, 0.0)])  # Fix bottom face
-
-    for node in top_nodes:
-        bcs.append((node, 2, 0.1))  # Prescribe z-displacement of top face
+    for node in left_nodes:
+        bcs.extend([(node, 0, 0.0), (node, 1, 0.0), (node, 2, 0.0)])  # fix left face
+    for node in right_nodes:
+        bcs.append((node, 0, 0.1))  # prescribe x-displacement of right face
 
     # Apply boundary conditions
     for node, dof, value in bcs:
@@ -32,4 +31,9 @@ def main() -> None:
 
     # Solve the system
     u = np.linalg.solve(K, f)
-    u = u.reshape(-1, 3)
+    displacement = u.reshape(-1, 3)
+    sorbet.post_processing.save_nodal_values(displacement, "displacement")
+    num_elements = elements.shape[0]
+    num_elements_per_node = elements[0, :].shape[0]
+    sorbet.post_processing.plot_deformed_mesh(num_elements, num_elements_per_node, nodes, elements, displacement)
+    sorbet.post_processing.color_plot_nodal_values(num_elements, num_elements_per_node, nodes, elements, displacement, displacement[:, 0], "Displacement X", deformed=True)
