@@ -95,3 +95,16 @@ def element_stiffness_matrix():
     raise SystemExit()
     print(K_e)
     return K_e
+
+
+def linear_elastic_material_tangent(E: float, nu: float) -> NDArray[np.float64]:
+    lmb = (E * nu) / ((1.0 + nu) * (1.0 - 2.0 * nu))  # Lamé's first parameter
+    mu = E / (2.0 * (1.0 + nu))  # Lamé's second parameter (shear modulus)
+    C = np.zeros((6, 6))
+    C[0, :] = lmb + 2.0 * mu, lmb, lmb, 0.0, 0.0, 0.0
+    C[1, :] = lmb, lmb + 2.0 * mu, lmb, 0.0, 0.0, 0.0
+    C[2, :] = lmb, lmb, lmb + 2.0 * mu, 0.0, 0.0, 0.0
+    C[3, :] = 0.0, 0.0, 0.0, mu, 0.0, 0.0
+    C[4, :] = 0.0, 0.0, 0.0, 0.0, mu, 0.0
+    C[5, :] = 0.0, 0.0, 0.0, 0.0, 0.0, mu
+    return C
