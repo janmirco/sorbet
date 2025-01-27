@@ -53,11 +53,26 @@ def linear_shape_function_derivatives(xi: float, eta: float, zeta: float) -> NDA
     return dN
 
 
+def B_operator(dN, J):
+    dN_phys = dN @ np.linalg.inv(J)
+    B = np.zeros((6, 24))
+    for i in range(8):
+        index_start = 3 * i
+        index_end = 3 * (i + 1)
+        B[0, index_start:index_end] = dN_phys[i, 0], 0.0, 0.0
+        B[1, index_start:index_end] = 0.0, dN_phys[i, 1], 0.0
+        B[2, index_start:index_end] = 0.0, 0.0, dN_phys[i, 2]
+        B[3, index_start:index_end] = dN_phys[i, 1], dN_phys[i, 0], 0.0
+        B[4, index_start:index_end] = dN_phys[i, 2], 0.0, dN_phys[i, 0]
+        B[5, index_start:index_end] = 0.0, dN_phys[i, 2], dN_phys[i, 1]
+    return B
+
+
 def gauss_quadrature(num_points: int = 8) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     match num_points:
         case 1:
             points = np.zeros((1, 3))
-            weights = 8.0 * np.ones(num_points)
+            weights = np.array([8.0])
             return points, weights
         case 8:
             x, _ = np.polynomial.legendre.leggauss(2)
@@ -79,24 +94,6 @@ def gauss_quadrature(num_points: int = 8) -> tuple[NDArray[np.float64], NDArray[
             raise NotImplementedError(f"Currently only supporting one or eight Gauss points. num_points = {num_points}")
 
 
-def element_stiffness_matrix():
-    K_e = np.zeros((24, 24))
-    points, weights = gauss_quadrature()
-
-    for (xi, eta, zeta), weight in zip(points, weights):
-        N = linear_shape_functions(xi, eta, zeta)
-        print(N)
-        # Calculate B matrix (strain-displacement matrix)
-        # Calculate Jacobian
-        # Calculate constitutive matrix D
-        # K_e += B.T * D * B * det(J) * w_i * w_j
-
-    print()
-    raise SystemExit()
-    print(K_e)
-    return K_e
-
-
 def linear_elastic_material_tangent(E: float, nu: float) -> NDArray[np.float64]:
     lmb = (E * nu) / ((1.0 + nu) * (1.0 - 2.0 * nu))  # Lamé's first parameter
     mu = E / (2.0 * (1.0 + nu))  # Lamé's second parameter (shear modulus)
@@ -108,3 +105,28 @@ def linear_elastic_material_tangent(E: float, nu: float) -> NDArray[np.float64]:
     C[4, :] = 0.0, 0.0, 0.0, 0.0, mu, 0.0
     C[5, :] = 0.0, 0.0, 0.0, 0.0, 0.0, mu
     return C
+
+
+def element_stiffness_matrix(element_nodes, material_parameters):
+    K_e = np.zeros((24, 24))
+    points, weights = gauss_quadrature(num_points=8)
+    C = linear_elastic_material_tangent(E=material_parameters["E"], nu=material_parameters["nu"])
+    for (xi, eta, zeta), weight in zip(points, weights):
+        dN = linear_shape_function_derivatives(xi, eta, zeta)
+        J = element_nodes.T @ dN
+        B = B_operator(dN, J)
+        K_e += B.T @ C @ B * np.linalg.det(J) * weight
+    return K_e
+
+
+def assemble_global_stiffness_matrix(nodes, elements, material_parameters):
+    num_nodes = nodes.shape[0]
+    K = np.zeros((3 * num_nodes, 3 * num_nodes))
+    for element in elements:
+        K_e = element_stiffness_matrix(nodes[element], material_parameters)
+        for i, node_i in enumerate(element):
+            for j, node_j in enumerate(element):
+                i_global = 3 * node_i
+                j_global = 3 * node_j
+                K[i_global : i_global + 3, j_global : j_global + 3] += K_e[3 * i : 3 * i + 3, 3 * j : 3 * j + 3]
+    return K
