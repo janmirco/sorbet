@@ -11,11 +11,11 @@ def main() -> None:
     num_nodes = nodes.shape[0]
     f = np.zeros(3 * num_nodes)  # initialize force vector with zeros
 
-    # Find nodes at all six faces
-    face_x_min = np.where(np.isclose(nodes[:, 0], 0))[0]
+    # Find nodes at relevant faces
+    face_x_min = np.where(np.isclose(nodes[:, 0], 0.0))[0]
     face_x_max = np.where(np.isclose(nodes[:, 0], nodes[:, 0].max()))[0]
-    face_y_min = np.where(np.isclose(nodes[:, 1], 0))[0]
-    face_z_min = np.where(np.isclose(nodes[:, 2], 0))[0]
+    face_y_min = np.where(np.isclose(nodes[:, 1], 0.0))[0]
+    face_z_min = np.where(np.isclose(nodes[:, 2], 0.0))[0]
 
     # Define displacement boundary conditions
     bcs = []
@@ -38,6 +38,8 @@ def main() -> None:
     # Solve the system
     u = np.linalg.solve(K, f)
     displacement = u.reshape(-1, 3)
+
+    # Run post-processing
     sorbet.post_processing.save_nodal_values(displacement, "displacement")
     num_elements = elements.shape[0]
     num_elements_per_node = elements[0, :].shape[0]
