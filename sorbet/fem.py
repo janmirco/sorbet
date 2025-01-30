@@ -155,8 +155,8 @@ def assemble_global_stiffness_matrix(nodes, elements, material_parameters):
     for element in elements:
         K_e = element_stiffness_matrix(nodes[element], material_parameters)
         for i, node_i in enumerate(element):
+            i_global = 3 * node_i
             for j, node_j in enumerate(element):
-                i_global = 3 * node_i
                 j_global = 3 * node_j
                 K[i_global : i_global + 3, j_global : j_global + 3] += K_e[3 * i : 3 * i + 3, 3 * j : 3 * j + 3]
     return K
