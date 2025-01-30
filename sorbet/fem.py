@@ -151,12 +151,13 @@ def element_stiffness_matrix(element_nodes, material_parameters):
 
 def assemble_global_stiffness_matrix(nodes, elements, material_parameters):
     num_nodes = nodes.shape[0]
-    K = np.zeros((3 * num_nodes, 3 * num_nodes))
+    dim = nodes.shape[1]
+    K = np.zeros((dim * num_nodes, dim * num_nodes))
     for element in elements:
         K_e = element_stiffness_matrix(nodes[element], material_parameters)
         for i, node_i in enumerate(element):
-            i_global = 3 * node_i
+            i_global = dim * node_i
             for j, node_j in enumerate(element):
-                j_global = 3 * node_j
-                K[i_global : i_global + 3, j_global : j_global + 3] += K_e[3 * i : 3 * i + 3, 3 * j : 3 * j + 3]
+                j_global = dim * node_j
+                K[i_global : i_global + dim, j_global : j_global + dim] += K_e[dim * i : dim * i + dim, dim * j : dim * j + dim]
     return K
