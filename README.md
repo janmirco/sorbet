@@ -9,9 +9,9 @@ The key point here is **readability** and **extensibility** over performance! (A
 ## Use cases
 
 - Continuum solid mechanics
-- Small <span style="color:gray;">and large</span> deformations
-- Elasticity <span style="color:gray;">and elasto-plasticity</span>
-- <span style="color:gray;">Spatial statistics</span>
+- Small ~~and large~~ deformations
+- Elasticity ~~and elasto-plasticity~~
+- ~~Spatial statistics~~
 
 ## Software used
 
