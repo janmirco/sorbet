@@ -4,14 +4,14 @@
 > But after such a meal, you may need something light and refreshing as a palate cleanser.
 
 Sorbet is a small, readable, and extensible [finite element](https://en.wikipedia.org/wiki/Finite_element_method) tool for quickly testing ideas or for teaching purposes.
-The key point here is **readability** and **extensibility** over performance!
+The key point here is **readability** and **extensibility** over performance! (At least, that is my goal.)
 
 ## Use cases
 
 - Continuum solid mechanics
-- Small and large deformations
-- Elasticity and elasto-plasticity
-- Spatial statistics
+- Small <span style="color:gray;">and large</span> deformations
+- Elasticity <span style="color:gray;">and elasto-plasticity</span>
+- <span style="color:gray;">Spatial statistics</span>
 
 ## Software used
 
